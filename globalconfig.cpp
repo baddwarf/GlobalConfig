@@ -15,7 +15,8 @@ uint8_t GlobalConfig::loadConfigFromJSON()
     if (!cfgFile)
     {
         Serial.println("[CONFIG] Unable to open config file");
-        return(ERRNO_FILEOPENFAILED);
+        _status = GC_ERRNO_FILEREADFAILED;
+        return(_status);
     }
     size_t size = cfgFile.size();
     Serial.print("[CONFIG] File size: ");
@@ -25,9 +26,11 @@ uint8_t GlobalConfig::loadConfigFromJSON()
     if (error)
     {
         Serial.println("[CONFIG] Unable to read config file");
-        return(ERRNO_FILEREADFAILED);
+        _status = GC_ERRNO_FILEREADFAILED;
+        return(_status);
     }
-    return(SUCCESS);
+    _status = GC_SUCCESS;
+    return(GC_SUCCESS);
 }
 
 uint8_t GlobalConfig::loadConfigFromJSON(char* fileName)
@@ -36,7 +39,8 @@ uint8_t GlobalConfig::loadConfigFromJSON(char* fileName)
     if (!cfgFile)
     {
         Serial.println("[CONFIG] Unable to open config file");
-        return(ERRNO_FILEOPENFAILED);
+        _status = GC_ERRNO_FILEOPENFAILED;
+        return(_status);
     }
     size_t size = cfgFile.size();
     Serial.print("[CONFIG] File size: ");
@@ -46,9 +50,11 @@ uint8_t GlobalConfig::loadConfigFromJSON(char* fileName)
     if (error)
     {
         Serial.println("[CONFIG] Unable to read config file");
-        return(ERRNO_FILEREADFAILED);
+        _status = GC_ERRNO_FILEREADFAILED;
+        return(_status);
     }
-    return(SUCCESS);
+    _status = GC_SUCCESS;
+    return(GC_SUCCESS);
 }
 
 String GlobalConfig::listConfig()
@@ -85,7 +91,8 @@ uint8_t GlobalConfig::saveConfigToJSON()
     if (!cfgFile)
     {
         Serial.println("[CONFIG] Unable to open config file for writing");
-        return(ERRNO_FILEOPENFAILED);
+        _status = GC_ERRNO_FILEOPENFAILED;
+        return(_status);
     }
     if (serializeJson(_doc, cfgFile) == 0)
     {
@@ -101,7 +108,8 @@ uint8_t GlobalConfig::saveConfigToJSON(char* fileName)
     if (!cfgFile)
     {
         Serial.println("[CONFIG] Unable to open config file for writing");
-        return(ERRNO_FILEOPENFAILED);
+        _status = GC_ERRNO_FILEOPENFAILED;
+        return(_status);
     }
     // serialize
     if (serializeJson(_doc, cfgFile) == 0)
@@ -120,7 +128,18 @@ JsonVariant GlobalConfig::getCfg(char* key)
     return (result);
 }
 
-void GlobalConfig::resetCOnfig()
+JsonVariant& GlobalConfig::operator[](char *key)
+{
+    JsonVariant result = _doc[key];
+    return (result);
+}
+
+DynamicJsonDocument GlobalConfig::getJSONConfig()
+{
+    return(_doc);
+}
+
+void GlobalConfig::resetConfig()
 {
     _doc["configured"] = false;
     _doc["wifissid"] = "";
@@ -140,4 +159,12 @@ void GlobalConfig::setCfg(char* key, int value)
 void GlobalConfig::setCfg(char* key, bool value)
 {
     _doc[key] = value;
+}
+
+bool GlobalConfig::isSuccess()
+{
+    if (_status)
+        return (true);
+    else
+        return (false);
 }
